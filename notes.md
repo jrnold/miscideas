@@ -22,11 +22,35 @@ Question: Is this  just equivalent a mixture model or Bayesian model averaging?
 
 Idea: this is more a Bayesian version of the model in Belloni et al. Instead of estimating the equations separately, estimate
 them simultaneously, and share information about sparsity by using the same
-$$
-y_i = \alpha + \tau x + \sum_{k = 1}^{K} \beta_k x_{i,k} + \epsilon_i \\
-y_i = \beta_0 + \tau x + \sum_{k = 1}^{K} \beta_k x_{i,k} + \epsilon_i \\
 
 $$
+\begin{aligned}[t]
+y_i &= \alpha_1 + \tau x + \sum_{k = 1}^{K} \beta_k x_{i,k} + \epsilon_i \\
+y_i &= \alpha_2  + \sum_{k = 1}^{K} \gamma_k x_{i,k} + \omega_i \\
+x_i &= \alpha_3  + \sum_{k = 1}^{K} \delta_k x_{i,k} + \eta_i \\
+\end{aligned}
+$$
+
+Either shrink all of $\beta$, $\gamma$, and $\delta$ together,
+$$
+\beta_k, \gamma_k, \delta_k \sim N(0, \zeta)
+$$
+so the only information shared across all the equations is the overall optimal amount of shrinkage, not just of the equation
+with the treatment, but also the other two equations.
+
+
+Alternatively use a sparse shrinkage prior, with the twist that the local scales parameter for each variable is shared across
+all equations; though the global sparsity in each equation could vary:
+$$
+\begin{aligned}[t]
+\beta_k \sim N(0, \zeta_1 \lambda_k) \\
+\gamma_k \sim N(0, \zeta_2 \lambda_k) \\
+\delta_k \sim N(0, \zeta_3 \lambda_k) \\
+\end{aligned}
+$$
+This encourages the variable to either be sparse everywhere or not.
+
+Question: Hos does this compare to the Hann and Carvalho approach?
 
 
 ## Omitted Variable Bias
@@ -52,20 +76,8 @@ y_i = \tau x_i + \beta z_i + \gamma \zeta_i + \epsilon_i
 $$
 where $y$, $x$, and $z$ are observed, and the others, including the omitted variable ($\omega$) are not.
 
-What else do we know? or assume?
-$$
-\E(\epsilon_i) = 0
-$$
-
-$$
-The omitted variable should be uncorrelated with $z_i$ (or at least the part of z_i that is correlated with x_i)
-$$
-\Cov(\omega_i, \zeta_i) = 0
-$$
-
-
 Put a prior on the overall explanatory power of the regression: as in https://cran.r-project.org/web/packages/rstanarm/vignettes/lm.html?
-I think the g-prior since it is interpretable as the $R^2$ of the regresssion would also work.
+I think the g-prior since it is interpretable as the $R^2$ of the regression would also work.
 
 Basically we want priors (or implied) over the covariance of $x$ and $\zeta$ and $y$ and $z$? ($\gamma$).
 
@@ -76,5 +88,5 @@ be used to draw values of $\zeta_i$ in a "distribution free" way.
 Model the entire thing with priors on components of the covariance matrix of $y$, $x$, $z$ and $\omega$?
 
 Question: isn't this *just* SEM? Has it been done before as an SEM? So what's new? My guess would be even if done as SEM,
-it was via MLE - so couldn't effectively use priors to identify the omitted varible. Even if done before, new Bayesian methods
+it was via MLE - so couldn't effectively use priors to identify the omitted variable. Even if done before, new Bayesian methods
 like HMC may allow flexibility in the choice of priors so not as constrained by choosing only conjugate priors.
